@@ -1,21 +1,30 @@
 package com.example.spotoolkit.ui.MainScreen;
 
+import MainViewModel
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
-fun MainScreen() {
-    Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-    ) {
-        Text(
-                text = "Main App Screen",
-                fontSize = 24.sp
-        )
-    }
+fun MainScreen(vm: MainViewModel) {
+//    val token by vm.token.collectAsState(initial = null)
+//    val result by vm.results.collectAsState(initial = "")
+//
+//
+//    Column {
+//        if (token != null) {
+//            Button(onClick = { vm.searchArtist() }) {
+//                Text("Search Radiohead")
+//            }
+//        }
+//
+//        Text(
+//            text = result,
+//            maxLines = 20
+//        )
+//    }
 }
+
