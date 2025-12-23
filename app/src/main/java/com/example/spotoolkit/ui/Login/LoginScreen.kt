@@ -1,4 +1,4 @@
-package com.example.spotoolkit.ui.LoginScreen
+package com.example.spotoolkit.ui.Login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

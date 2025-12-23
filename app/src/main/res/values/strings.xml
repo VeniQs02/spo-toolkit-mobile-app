@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">SpoToolkit</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_login">Login</string>
+    <string name="title_search">Search</string>
+    <string name="title_playlists">Playlists</string>
+    <string name="title_profile">Profile</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.spotoolkit.ui.ErrorScreen;
+package com.example.spotoolkit.ui.Error;
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

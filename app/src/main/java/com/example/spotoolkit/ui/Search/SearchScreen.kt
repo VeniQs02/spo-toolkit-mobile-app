@@ -1,4 +1,4 @@
-package com.example.spotoolkit.ui.SearchScreen
+package com.example.spotoolkit.ui.Search
 
 import MainViewModel
 import androidx.compose.foundation.layout.Column

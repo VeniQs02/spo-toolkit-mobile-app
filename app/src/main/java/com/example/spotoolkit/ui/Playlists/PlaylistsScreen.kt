@@ -1,16 +1,17 @@
-package com.example.spotoolkit.ui.LoadingScreen;
+package com.example.spotoolkit.ui.Playlists
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 @Composable
-fun LoadingScreen() {
+fun PlaylistsScreen() {
     Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator()
+        Text("Playlists")
     }
 }
