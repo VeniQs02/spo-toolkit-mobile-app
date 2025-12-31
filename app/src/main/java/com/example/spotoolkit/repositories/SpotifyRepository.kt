@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Base64
 import com.example.spotoolkit.responses.Artist
+import com.example.spotoolkit.responses.Followers
 import com.example.spotoolkit.responses.Image
 import com.example.spotoolkit.util.PKCEUtil
 import kotlinx.coroutines.Dispatchers
@@ -109,30 +110,43 @@ class SpotifyRepository {
                 .build()
 
             val response = client.newCall(request).execute()
-            val json = JSONObject(response.body?.string() ?: "")
-            val artistsJson = json.getJSONObject("artists").getJSONArray("items")
+            val body = response.body?.string() ?: return@withContext emptyList()
+
+            val artistsJson = JSONObject(body)
+                .getJSONObject("artists")
+                .getJSONArray("items")
 
             (0 until artistsJson.length()).map { i ->
                 val a = artistsJson.getJSONObject(i)
+
                 val imagesJson = a.getJSONArray("images")
+                val genresJson = a.getJSONArray("genres")
+                val followersJson = a.getJSONObject("followers")
+
                 Artist(
                     id = a.getString("id"),
                     name = a.getString("name"),
                     popularity = a.getInt("popularity"),
                     external_urls = a.getJSONObject("external_urls").toMap(),
+                    followers = Followers(
+                        total = followersJson.getInt("total")
+                    ),
+                    genres = (0 until genresJson.length()).map { j ->
+                        genresJson.getString(j)
+                    },
                     images = (0 until imagesJson.length()).map { j ->
                         val img = imagesJson.getJSONObject(j)
                         Image(
                             url = img.getString("url"),
-                            height = img.optInt("height"),
-                            width = img.optInt("width")
+                            height = img.optInt("height").takeIf { it != 0 },
+                            width = img.optInt("width").takeIf { it != 0 }
                         )
                     }
                 )
             }
         }
-
 }
+
 
 fun JSONObject.toMap(): Map<String, String> =
     keys().asSequence().associateWith { getString(it) }

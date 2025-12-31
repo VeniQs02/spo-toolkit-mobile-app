@@ -1,6 +1,9 @@
 package com.example.spotoolkit.ui.Search
 
 import MainViewModel
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
@@ -30,6 +34,7 @@ fun SearchScreen(vm: MainViewModel) {
     val query by vm.query.collectAsState()
     val results by vm.results.collectAsState()
     val loading by vm.loading.collectAsState()
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
@@ -57,7 +62,21 @@ fun SearchScreen(vm: MainViewModel) {
 
         LazyColumn {
             items(results) { artist ->
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                val spotifyUrl = artist.external_urls["spotify"]
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .clickable(enabled = spotifyUrl != null) {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(spotifyUrl)
+                            )
+                            context.startActivity(intent)
+                        }
+                ) {
+
                     if (artist.images.isNotEmpty()) {
                         AsyncImage(
                             model = artist.images.first().url,
@@ -69,12 +88,38 @@ fun SearchScreen(vm: MainViewModel) {
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Column {
-                        Text(artist.name, style = MaterialTheme.typography.titleMedium)
-                        Text("Popularity: ${artist.popularity}", style = MaterialTheme.typography.bodyMedium)
-                        Text(artist.external_urls["spotify"] ?: "", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            artist.name,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            "Followers: ${formatFollowerNumber(artist.followers.total)}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            artist.genres.joinToString(", "),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                        )
                     }
                 }
             }
         }
     }
 }
+
+fun formatFollowerNumber(n: Int): String =
+    when {
+        n > 999999 -> {
+            val millions = n / 1000000
+            val decimal = (n % 1000000) / 100000
+            "$millions.$decimal M"
+        }
+        n > 999 -> {
+            val thousands = n / 1000
+            val rest = n % 1000
+            "$thousands,${rest.toString().padStart(3, '0')}"
+        }
+        else -> n.toString()
+    }
+

@@ -13,11 +13,17 @@ data class Artist(
     val name: String,
     val images: List<Image>,
     val popularity: Int,
-    val external_urls: Map<String, String>
+    val followers: Followers,
+    val genres: List<String>,
+    val external_urls: Map<String, String>,
 )
 
 data class Image(
     val url: String,
     val height: Int?,
-    val width: Int?
+    val width: Int?,
+)
+
+data class Followers(
+    val total: Int
 )
