@@ -7,7 +7,7 @@ import java.security.SecureRandom
 object PKCEUtil {
 
     fun generateCodeVerifier(): String {
-        val bytes = ByteArray(32)
+        val bytes = ByteArray(64)
         SecureRandom().nextBytes(bytes)
         return Base64.encodeToString(
             bytes,

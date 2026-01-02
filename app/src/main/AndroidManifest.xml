@@ -39,9 +39,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="https"
-                    android:host="spotoolkit.app"
-                    android:path="/callback" />
+                    android:scheme="spotoolkit"
+                    android:host="callback" />
             </intent-filter>
         </activity>
     </application>

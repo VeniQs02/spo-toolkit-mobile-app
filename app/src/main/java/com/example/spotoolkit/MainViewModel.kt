@@ -12,7 +12,7 @@ import com.example.spotoolkit.util.AuthState
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val repo = SpotifyRepository()
+    private val repo = SpotifyRepository(application)
 
     val authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val token = MutableStateFlow<String?>(null)
@@ -33,15 +33,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun handleAuthCode(code: String) {
         authState.value = AuthState.Loading
-
         viewModelScope.launch {
             try {
                 val newToken = repo.exchangeCodeForToken(code)
                 token.value = newToken
-                (getApplication() as App).spotifyToken = newToken
                 authState.value = AuthState.Authenticated
+                repo.clearVerifier() // clean up
+                Log.d("PKCE", "Token acquired: $newToken")
             } catch (e: Exception) {
                 authState.value = AuthState.Error(e.message ?: "Authorization failed")
+                Log.e("PKCE", "Token exchange failed", e)
             }
         }
     }

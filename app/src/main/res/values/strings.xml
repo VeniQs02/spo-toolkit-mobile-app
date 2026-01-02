@@ -4,4 +4,7 @@
     <string name="title_search">Search</string>
     <string name="title_playlists">Playlists</string>
     <string name="title_profile">Profile</string>
+
+    <string name="login_button">Login with Spotify</string>
+    <string name="logged_in_button">Already logged in</string>
 </resources>
