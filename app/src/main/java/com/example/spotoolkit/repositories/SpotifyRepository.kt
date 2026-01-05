@@ -24,11 +24,7 @@ class SpotifyRepository(context: Context) {
     private val client = OkHttpClient()
 
     private val CLIENT_ID = "d9d3978d2343416eaac48b4a361dc033"
-    private val CLIENT_SECRET = "efd9683f6c7a417ebf9cc10514ec14b9"
     private val REDIRECT_URI = "spotoolkit://callback"
-
-    private val codeVerifier = PKCEUtil.generateCodeVerifier()
-    private val codeChallenge = PKCEUtil.codeChallenge(codeVerifier)
 
     fun buildAuthIntent(): Intent {
         val verifier = PKCEUtil.generateCodeVerifier()
@@ -99,29 +95,6 @@ class SpotifyRepository(context: Context) {
         JSONObject(responseBody).getString("access_token")
     }
 
-
-    suspend fun fetchToken(): String = withContext(Dispatchers.IO) {
-        val credentials = "$CLIENT_ID:$CLIENT_SECRET"
-        val encoded = Base64.encodeToString(
-            credentials.toByteArray(),
-            Base64.NO_WRAP
-        )
-
-        val body = FormBody.Builder()
-            .add("grant_type", "client_credentials")
-            .build()
-
-        val request = Request.Builder()
-            .url("https://accounts.spotify.com/api/token")
-            .post(body)
-            .addHeader("Authorization", "Basic $encoded")
-            .build()
-
-        val response = client.newCall(request).execute()
-        val json = JSONObject(response.body?.string() ?: "")
-        json.getString("access_token")
-    }
-
     suspend fun searchArtist(token: String, query: String): List<Artist> =
         withContext(Dispatchers.IO) {
             val url = HttpUrl.Builder()
@@ -141,6 +114,11 @@ class SpotifyRepository(context: Context) {
 
             val response = client.newCall(request).execute()
             val body = response.body?.string() ?: return@withContext emptyList()
+
+            if (!response.isSuccessful) {
+                Log.e("API", "Search failed ${response.code}: $body")
+                return@withContext emptyList()
+            }
 
             val artistsJson = JSONObject(body)
                 .getJSONObject("artists")

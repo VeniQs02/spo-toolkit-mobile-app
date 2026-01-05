@@ -27,7 +27,6 @@ import com.example.spotoolkit.util.AuthState
 @Composable
 fun MainScreen(vm: MainViewModel) {
     val navController = rememberNavController()
-    vm.loadToken()
 
     val authState by vm.authState.collectAsState()
 

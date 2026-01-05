@@ -20,12 +20,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val results = MutableStateFlow<List<Artist>>(emptyList())
     val loading = MutableStateFlow(false)
 
-    fun loadToken() {
-        viewModelScope.launch {
-            token.value = repo.fetchToken()
-        }
-    }
-
     fun startSpotifyAuth(activity: Activity) {
         val intent = repo.buildAuthIntent()
         activity.startActivity(intent)
