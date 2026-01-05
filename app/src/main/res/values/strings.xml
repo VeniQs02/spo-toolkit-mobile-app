@@ -5,6 +5,7 @@
     <string name="title_playlists">Playlists</string>
     <string name="title_profile">Profile</string>
 
-    <string name="login_button">Login with Spotify</string>
-    <string name="logged_in_button">Already logged in</string>
+    <string name="login_with_spotify">Login with Spotify</string>
+    <string name="logging_in">Logging in…</string>
+    <string name="already_logged_in">Already logged in</string>
 </resources>

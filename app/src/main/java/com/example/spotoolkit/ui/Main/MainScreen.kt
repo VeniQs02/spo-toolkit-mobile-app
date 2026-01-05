@@ -1,7 +1,6 @@
 package com.example.spotoolkit.ui.main
 
 import MainViewModel
-import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -10,18 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.*
-import com.example.spotoolkit.R
 import com.example.spotoolkit.ui.BottomDest
-import com.example.spotoolkit.ui.Login.LoginScreen
 import com.example.spotoolkit.ui.Playlists.PlaylistsScreen
 import com.example.spotoolkit.ui.Profile.ProfileScreen
 import com.example.spotoolkit.ui.Search.SearchScreen
-import com.example.spotoolkit.util.AuthState
 
 
 @Composable
@@ -33,7 +27,6 @@ fun MainScreen(vm: MainViewModel) {
     LaunchedEffect(authState) { Log.d("PKCE", "Auth state changed: $authState") }
 
     val items = listOf(
-        BottomDest.Login,
         BottomDest.Search,
         BottomDest.Playlists,
         BottomDest.Profile
@@ -60,29 +53,12 @@ fun MainScreen(vm: MainViewModel) {
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = BottomDest.Login.route,
+            startDestination = BottomDest.Search.route,
             modifier = Modifier.padding(padding)
         ) {
-
-            val buttonText = if(authState == AuthState.Authenticated){
-                R.string.logged_in_button
-            } else {
-                R.string.login_button
-            }
-
-            composable(BottomDest.Login.route) {
-                val activity = LocalContext.current as? Activity
-                if (activity != null) {
-                    LoginScreen(
-                        {vm.startSpotifyAuth(activity)},
-                        stringResource(buttonText),
-                        authState != AuthState.Authenticated
-                    )
-                }
-            }
             composable(BottomDest.Search.route) { SearchScreen(vm) }
             composable(BottomDest.Playlists.route) { PlaylistsScreen() }
-            composable(BottomDest.Profile.route) { ProfileScreen() }
+            composable(BottomDest.Profile.route) { ProfileScreen(vm) }
         }
     }
 }

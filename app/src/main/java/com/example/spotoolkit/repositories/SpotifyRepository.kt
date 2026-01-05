@@ -3,7 +3,6 @@ package com.example.spotoolkit.repositories
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Base64
 import android.util.Log
 import com.example.spotoolkit.responses.Artist
 import com.example.spotoolkit.responses.Followers

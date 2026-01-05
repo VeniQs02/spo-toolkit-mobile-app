@@ -7,8 +7,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.ViewModelProvider
-import com.example.spotoolkit.ui.main.MainScreen
+
 
 
 class MainActivity : ComponentActivity() {
@@ -19,8 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         handleIntent(intent)
-
-        setContent { MainScreen(vm) }
+        setContent { AppRoot(vm) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -31,10 +29,8 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent) {
         val uri = intent.data
         if (uri != null && uri.toString().startsWith("spotoolkit://callback")) {
-            Log.d("PKCE", "Redirect received: $uri")
             val code = uri.getQueryParameter("code")
             val error = uri.getQueryParameter("error")
-            Log.d("PKCE", "Authorization code: $code")
             Log.d("PKCE", "Error: $error")
             code?.let { vm.handleAuthCode(it) }
         }

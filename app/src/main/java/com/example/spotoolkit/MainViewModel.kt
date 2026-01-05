@@ -1,5 +1,5 @@
-import android.app.Activity
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.spotoolkit.repositories.SpotifyRepository
@@ -7,7 +7,6 @@ import com.example.spotoolkit.responses.Artist
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
-import com.example.spotoolkit.App
 import com.example.spotoolkit.util.AuthState
 
 
@@ -20,10 +19,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val results = MutableStateFlow<List<Artist>>(emptyList())
     val loading = MutableStateFlow(false)
 
-    fun startSpotifyAuth(activity: Activity) {
-        val intent = repo.buildAuthIntent()
-        activity.startActivity(intent)
+    fun buildSpotifyAuthIntent(): Intent {
+        return repo.buildAuthIntent()
     }
+
 
     fun handleAuthCode(code: String) {
         authState.value = AuthState.Loading
