@@ -13,8 +13,7 @@ sealed class BottomDest(
     val label: Int,
     val icon: ImageVector
 ) {
-    object Login : BottomDest("login", R.string.title_login, Icons.Default.Person)
     object Search : BottomDest("search", R.string.title_search, Icons.Default.Search)
     object Playlists : BottomDest("playlists", R.string.title_playlists, Icons.Default.Star)
-    object Profile : BottomDest("profile", R.string.title_profile, Icons.Default.Create)
+    object UserProfile : BottomDest("userProfile", R.string.title_user_profile, Icons.Default.Create)
 }

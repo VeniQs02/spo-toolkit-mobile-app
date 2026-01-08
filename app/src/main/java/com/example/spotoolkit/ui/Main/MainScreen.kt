@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 import com.example.spotoolkit.ui.BottomDest
 import com.example.spotoolkit.ui.Playlists.PlaylistsScreen
-import com.example.spotoolkit.ui.Profile.ProfileScreen
+import com.example.spotoolkit.ui.UserProfile.UserProfileScreen
 import com.example.spotoolkit.ui.Search.SearchScreen
 
 
@@ -29,7 +29,7 @@ fun MainScreen(vm: MainViewModel) {
     val items = listOf(
         BottomDest.Search,
         BottomDest.Playlists,
-        BottomDest.Profile
+        BottomDest.UserProfile
     )
 
     Scaffold(
@@ -58,7 +58,7 @@ fun MainScreen(vm: MainViewModel) {
         ) {
             composable(BottomDest.Search.route) { SearchScreen(vm) }
             composable(BottomDest.Playlists.route) { PlaylistsScreen() }
-            composable(BottomDest.Profile.route) { ProfileScreen(vm) }
+            composable(BottomDest.UserProfile.route) { UserProfileScreen(vm) }
         }
     }
 }

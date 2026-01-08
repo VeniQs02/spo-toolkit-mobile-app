@@ -7,6 +7,7 @@ import com.example.spotoolkit.responses.Artist
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
+import com.example.spotoolkit.ui.UserProfile.User
 import com.example.spotoolkit.util.AuthState
 
 
@@ -16,7 +17,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val token = MutableStateFlow<String?>(null)
     val query = MutableStateFlow("")
-    val results = MutableStateFlow<List<Artist>>(emptyList())
+    val artistsResults = MutableStateFlow<List<Artist>>(emptyList())
+    val userResults = MutableStateFlow<User?>(null)
     val loading = MutableStateFlow(false)
 
     fun buildSpotifyAuthIntent(): Intent {
@@ -31,11 +33,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val newToken = repo.exchangeCodeForToken(code)
                 token.value = newToken
                 authState.value = AuthState.Authenticated
-                repo.clearVerifier() // clean up
-                Log.d("PKCE", "Token acquired: $newToken")
+                repo.clearVerifier()
+                fetchUserData()
             } catch (e: Exception) {
                 authState.value = AuthState.Error(e.message ?: "Authorization failed")
-                Log.e("PKCE", "Token exchange failed", e)
             }
         }
     }
@@ -47,8 +48,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             loading.value = true
             try {
-                results.value = repo.searchArtist(t, q)
-            } catch (_: Exception) { results.value = emptyList() }
+                artistsResults.value = repo.searchArtist(t, q)
+            } catch (e: Exception) {
+                artistsResults.value = emptyList()
+            }
+            loading.value = false
+        }
+    }
+
+    fun fetchUserData() {
+        val t = token.value ?: return
+
+        viewModelScope.launch {
+            loading.value = true
+            try {
+                userResults.value = repo.fetchUserData(t)
+            } catch (e: Exception) {
+                userResults.value = null
+            }
             loading.value = false
         }
     }

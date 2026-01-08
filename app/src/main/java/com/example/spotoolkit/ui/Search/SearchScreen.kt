@@ -34,7 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun SearchScreen(vm: MainViewModel) {
     val query by vm.query.collectAsState()
-    val results by vm.results.collectAsState()
+    val results by vm.artistsResults.collectAsState()
     val loading by vm.loading.collectAsState()
     val context = LocalContext.current
 

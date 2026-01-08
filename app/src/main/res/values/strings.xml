@@ -3,7 +3,7 @@
     <string name="title_login">Login</string>
     <string name="title_search">Search</string>
     <string name="title_playlists">Playlists</string>
-    <string name="title_profile">Profile</string>
+    <string name="title_user_profile">User profile</string>
 
     <string name="login_with_spotify">Login with Spotify</string>
     <string name="logging_in">Logging in…</string>

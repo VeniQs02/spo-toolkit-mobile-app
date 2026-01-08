@@ -7,6 +7,7 @@ import android.util.Log
 import com.example.spotoolkit.responses.Artist
 import com.example.spotoolkit.responses.Followers
 import com.example.spotoolkit.responses.Image
+import com.example.spotoolkit.ui.UserProfile.User
 import com.example.spotoolkit.util.PKCEUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,6 +25,14 @@ class SpotifyRepository(context: Context) {
 
     private val CLIENT_ID = "d9d3978d2343416eaac48b4a361dc033"
     private val REDIRECT_URI = "spotoolkit://callback"
+
+    private val baseUrl: HttpUrl =
+        HttpUrl.Builder()
+            .scheme("https")
+            .host("api.spotify.com")
+            .addPathSegment("v1")
+            .build()
+
 
     fun buildAuthIntent(): Intent {
         val verifier = PKCEUtil.generateCodeVerifier()
@@ -66,7 +75,7 @@ class SpotifyRepository(context: Context) {
     }
 
     suspend fun exchangeCodeForToken(code: String): String = withContext(Dispatchers.IO) {
-        val verifier = getVerifier() // <-- use the saved verifier
+        val verifier = getVerifier()
 
         val body = FormBody.Builder()
             .add("grant_type", "authorization_code")
@@ -96,10 +105,7 @@ class SpotifyRepository(context: Context) {
 
     suspend fun searchArtist(token: String, query: String): List<Artist> =
         withContext(Dispatchers.IO) {
-            val url = HttpUrl.Builder()
-                .scheme("https")
-                .host("api.spotify.com")
-                .addPathSegment("v1")
+            val url = baseUrl.newBuilder()
                 .addPathSegment("search")
                 .addQueryParameter("q", query)
                 .addQueryParameter("type", "artist")
@@ -152,6 +158,36 @@ class SpotifyRepository(context: Context) {
                 )
             }
         }
+
+    suspend fun fetchUserData(token: String): User = withContext(Dispatchers.IO) {
+        val url = baseUrl.newBuilder()
+            .addPathSegment("me")
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        val response = client.newCall(request).execute()
+        val body = response.body?.string() ?: error("Empty response")
+
+        if (!response.isSuccessful) {
+            throw Exception("User data request failed: ${response.code} $body")
+        }
+
+        val json = JSONObject(body)
+
+        val displayName = json.optString("display_name", "Unknown")
+        val country = json.optString("country", "")
+        val followers = json.getJSONObject("followers").optInt("total", 0)
+        val images = json.optJSONArray("images")
+        val imageUrl = if (images != null && images.length() > 0) {
+            images.getJSONObject(0).optString("url")
+        } else null
+
+        User(displayName, country, followers, imageUrl)
+    }
 }
 
 
