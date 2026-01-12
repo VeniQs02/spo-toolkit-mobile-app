@@ -27,30 +27,26 @@ fun MainScreen(vm: MainViewModel) {
     LaunchedEffect(authState) { Log.d("PKCE", "Auth state changed: $authState") }
 
     val items = listOf(
-        BottomDest.Search,
-        BottomDest.Playlists,
-        BottomDest.UserProfile
+        BottomDest.Search, BottomDest.Playlists, BottomDest.UserProfile
     )
 
-    Scaffold(
-        bottomBar = {
-            Box(modifier = Modifier.height(56.dp)) {
-                NavigationBar {
-                    val backStack by navController.currentBackStackEntryAsState()
-                    val currentRoute = backStack?.destination?.route
+    Scaffold(bottomBar = {
+        Box(modifier = Modifier.height(56.dp)) {
+            NavigationBar {
+                val backStack by navController.currentBackStackEntryAsState()
+                val currentRoute = backStack?.destination?.route
 
-                    items.forEach { dest ->
-                        NavigationBarItem(
-                            selected = currentRoute == dest.route,
-                            onClick = { navController.navigate(dest.route) { launchSingleTop = true } },
-                            icon = { Icon(dest.icon, contentDescription = null) },
-                            label = { Text(stringResource(dest.label)) },
-                        )
-                    }
+                items.forEach { dest ->
+                    NavigationBarItem(
+                        selected = currentRoute == dest.route,
+                        onClick = { navController.navigate(dest.route) { launchSingleTop = true } },
+                        icon = { Icon(dest.icon, contentDescription = null) },
+                        label = { Text(stringResource(dest.label)) },
+                    )
                 }
             }
         }
-    ) { padding ->
+    }) { padding ->
         NavHost(
             navController = navController,
             startDestination = BottomDest.Search.route,

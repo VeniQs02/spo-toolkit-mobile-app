@@ -13,8 +13,7 @@ fun AppRoot(vm: MainViewModel) {
     val authState by vm.authState.collectAsState()
 
     when (authState) {
-        AuthState.Unauthenticated,
-        AuthState.Loading -> LoginScreen(vm)
+        AuthState.Unauthenticated, AuthState.Loading -> LoginScreen(vm)
 
         AuthState.Authenticated -> MainScreen(vm)
 

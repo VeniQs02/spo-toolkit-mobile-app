@@ -27,16 +27,12 @@ fun LoginScreen(vm: MainViewModel) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
-        Button(
-            enabled = enabled,
-            onClick = {
-                val intent = vm.buildSpotifyAuthIntent()
-                context.startActivity(intent)
-            }
-        ) {
+        Button(enabled = enabled, onClick = {
+            val intent = vm.buildSpotifyAuthIntent()
+            context.startActivity(intent)
+        }) {
             Text(stringResource(text))
         }
     }

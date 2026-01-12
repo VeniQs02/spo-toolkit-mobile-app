@@ -3,10 +3,9 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.spotoolkit.repositories.SpotifyRepository
-import com.example.spotoolkit.responses.Artist
+import com.example.spotoolkit.ui.Search.SearchType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
 import com.example.spotoolkit.ui.UserProfile.User
 import com.example.spotoolkit.util.AuthState
 
@@ -17,9 +16,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val token = MutableStateFlow<String?>(null)
     val query = MutableStateFlow("")
-    val artistsResults = MutableStateFlow<List<Artist>>(emptyList())
     val userResults = MutableStateFlow<User?>(null)
     val loading = MutableStateFlow(false)
+
+    val searchResults = MutableStateFlow<List<SearchResultItem>>(emptyList())
+    val searchType = MutableStateFlow(SearchType.Artist)
 
     fun buildSpotifyAuthIntent(): Intent {
         return repo.buildAuthIntent()
@@ -41,20 +42,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun searchArtist() {
+    fun search() {
         val t = token.value ?: return
         val q = query.value.ifEmpty { return }
 
         viewModelScope.launch {
             loading.value = true
             try {
-                artistsResults.value = repo.searchArtist(t, q)
+                searchResults.value = repo.search(t, q, searchType.value)
             } catch (e: Exception) {
-                artistsResults.value = emptyList()
+                searchResults.value = emptyList()
             }
             loading.value = false
         }
     }
+
 
     fun fetchUserData() {
         val t = token.value ?: return

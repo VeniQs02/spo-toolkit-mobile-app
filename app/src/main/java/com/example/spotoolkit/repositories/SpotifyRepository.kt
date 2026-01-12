@@ -1,14 +1,15 @@
 package com.example.spotoolkit.repositories
 
+import SearchResponse
+import SearchResultItem
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import com.example.spotoolkit.responses.Artist
-import com.example.spotoolkit.responses.Followers
-import com.example.spotoolkit.responses.Image
+import com.example.spotoolkit.ui.Search.SearchType
 import com.example.spotoolkit.ui.UserProfile.User
 import com.example.spotoolkit.util.PKCEUtil
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
@@ -27,11 +28,7 @@ class SpotifyRepository(context: Context) {
     private val REDIRECT_URI = "spotoolkit://callback"
 
     private val baseUrl: HttpUrl =
-        HttpUrl.Builder()
-            .scheme("https")
-            .host("api.spotify.com")
-            .addPathSegment("v1")
-            .build()
+        HttpUrl.Builder().scheme("https").host("api.spotify.com").addPathSegment("v1").build()
 
 
     fun buildAuthIntent(): Intent {
@@ -40,27 +37,17 @@ class SpotifyRepository(context: Context) {
 
         val challenge = PKCEUtil.codeChallenge(verifier)
 
-        val uri = Uri.Builder()
-            .scheme("https")
-            .authority("accounts.spotify.com")
-            .appendPath("authorize")
-            .appendQueryParameter("client_id", CLIENT_ID)
-            .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("redirect_uri", REDIRECT_URI)
-            .appendQueryParameter(
-                "scope",
-                "user-read-private playlist-read-private"
-            )
-            .appendQueryParameter("code_challenge_method", "S256")
-            .appendQueryParameter("code_challenge", challenge)
+        val uri = Uri.Builder().scheme("https").authority("accounts.spotify.com").appendPath("authorize")
+            .appendQueryParameter("client_id", CLIENT_ID).appendQueryParameter("response_type", "code")
+            .appendQueryParameter("redirect_uri", REDIRECT_URI).appendQueryParameter(
+                "scope", "user-read-private playlist-read-private"
+            ).appendQueryParameter("code_challenge_method", "S256").appendQueryParameter("code_challenge", challenge)
             .build()
 
         return Intent(Intent.ACTION_VIEW, uri)
     }
 
-    fun getVerifier(): String =
-        prefs.getString(KEY_VERIFIER, null)
-            ?: error("PKCE verifier missing — auth flow broken")
+    fun getVerifier(): String = prefs.getString(KEY_VERIFIER, null) ?: error("PKCE verifier missing — auth flow broken")
 
     fun clearVerifier() {
         prefs.edit().remove(KEY_VERIFIER).apply()
@@ -77,18 +64,10 @@ class SpotifyRepository(context: Context) {
     suspend fun exchangeCodeForToken(code: String): String = withContext(Dispatchers.IO) {
         val verifier = getVerifier()
 
-        val body = FormBody.Builder()
-            .add("grant_type", "authorization_code")
-            .add("code", code)
-            .add("redirect_uri", REDIRECT_URI)
-            .add("client_id", CLIENT_ID)
-            .add("code_verifier", verifier)
-            .build()
+        val body = FormBody.Builder().add("grant_type", "authorization_code").add("code", code)
+            .add("redirect_uri", REDIRECT_URI).add("client_id", CLIENT_ID).add("code_verifier", verifier).build()
 
-        val request = Request.Builder()
-            .url("https://accounts.spotify.com/api/token")
-            .post(body)
-            .build()
+        val request = Request.Builder().url("https://accounts.spotify.com/api/token").post(body).build()
 
         val response = client.newCall(request).execute()
         val responseBody = response.body?.string() ?: ""
@@ -103,71 +82,47 @@ class SpotifyRepository(context: Context) {
         JSONObject(responseBody).getString("access_token")
     }
 
-    suspend fun searchArtist(token: String, query: String): List<Artist> =
-        withContext(Dispatchers.IO) {
-            val url = baseUrl.newBuilder()
-                .addPathSegment("search")
-                .addQueryParameter("q", query)
-                .addQueryParameter("type", "artist")
-                .addQueryParameter("limit", "10")
-                .build()
+    suspend fun search(
+        token: String, query: String, type: SearchType
+    ): List<SearchResultItem> = withContext(Dispatchers.IO) {
+        val url = baseUrl.newBuilder().addPathSegment("search").addQueryParameter("q", query)
+            .addQueryParameter("type", type.string).addQueryParameter("limit", "10").build()
 
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .build()
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $token").build()
 
-            val response = client.newCall(request).execute()
-            val body = response.body?.string() ?: return@withContext emptyList()
+        val response = client.newCall(request).execute()
+        val body = response.body?.string() ?: return@withContext emptyList()
 
-            if (!response.isSuccessful) {
-                Log.e("API", "Search failed ${response.code}: $body")
-                return@withContext emptyList()
-            }
-
-            val artistsJson = JSONObject(body)
-                .getJSONObject("artists")
-                .getJSONArray("items")
-
-            (0 until artistsJson.length()).map { i ->
-                val a = artistsJson.getJSONObject(i)
-
-                val imagesJson = a.getJSONArray("images")
-                val genresJson = a.getJSONArray("genres")
-                val followersJson = a.getJSONObject("followers")
-
-                Artist(
-                    id = a.getString("id"),
-                    name = a.getString("name"),
-                    popularity = a.getInt("popularity"),
-                    external_urls = a.getJSONObject("external_urls").toMap(),
-                    followers = Followers(
-                        total = followersJson.getInt("total")
-                    ),
-                    genres = (0 until genresJson.length()).map { j ->
-                        genresJson.getString(j)
-                    },
-                    images = (0 until imagesJson.length()).map { j ->
-                        val img = imagesJson.getJSONObject(j)
-                        Image(
-                            url = img.getString("url"),
-                            height = img.optInt("height").takeIf { it != 0 },
-                            width = img.optInt("width").takeIf { it != 0 }
-                        )
-                    }
-                )
-            }
+        if (!response.isSuccessful) {
+            Log.e("API", "Search failed ${response.code}: $body")
+            return@withContext emptyList()
         }
 
-    suspend fun fetchUserData(token: String): User = withContext(Dispatchers.IO) {
-        val url = baseUrl.newBuilder()
-            .addPathSegment("me")
-            .build()
+        val gson = Gson()
+        val searchResponse = gson.fromJson(body, SearchResponse::class.java)
 
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .build()
+        when (type) {
+            SearchType.Artist -> searchResponse.artists?.items?.map { SearchResultItem.ArtistItem(it) }
+            SearchType.Track -> searchResponse.tracks?.items?.map { SearchResultItem.TrackItem(it) }
+            SearchType.Album -> searchResponse.albums?.items?.map { SearchResultItem.AlbumItem(it) }
+            SearchType.Playlist -> searchResponse.playlists?.items?.mapNotNull {
+                it?.let {
+                    SearchResultItem.PlaylistItem(
+                        it
+                    )
+                }
+            } ?: emptyList()
+
+            SearchType.Show -> searchResponse.shows?.items?.map { SearchResultItem.ShowItem(it) }
+            SearchType.Episode -> searchResponse.episodes?.items?.map { SearchResultItem.EpisodeItem(it) }
+        } ?: emptyList()
+    }
+
+
+    suspend fun fetchUserData(token: String): User = withContext(Dispatchers.IO) {
+        val url = baseUrl.newBuilder().addPathSegment("me").build()
+
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $token").build()
 
         val response = client.newCall(request).execute()
         val body = response.body?.string() ?: error("Empty response")
@@ -191,5 +146,4 @@ class SpotifyRepository(context: Context) {
 }
 
 
-fun JSONObject.toMap(): Map<String, String> =
-    keys().asSequence().associateWith { getString(it) }
+fun JSONObject.toMap(): Map<String, String> = keys().asSequence().associateWith { getString(it) }

@@ -28,9 +28,11 @@ fun UserProfileScreen(vm: MainViewModel) {
                 Text(stringResource(R.string.login_with_spotify))
             }
         }
+
         userResults != null -> {
             UserDataList(userResults!!)
         }
+
         else -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -40,12 +42,11 @@ fun UserProfileScreen(vm: MainViewModel) {
 }
 
 @Composable
-fun UserDataList(userResults: User){
+fun UserDataList(userResults: User) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Profile Image
         if (!userResults.imageUrl.isNullOrEmpty()) {
@@ -60,8 +61,7 @@ fun UserDataList(userResults: User){
 
         // Display name
         Text(
-            text = userResults.displayName,
-            style = MaterialTheme.typography.titleLarge
+            text = userResults.displayName, style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(modifier = Modifier.height(8.dp))

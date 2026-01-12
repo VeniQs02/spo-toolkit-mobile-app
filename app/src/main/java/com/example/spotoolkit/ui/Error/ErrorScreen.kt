@@ -10,17 +10,14 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ErrorScreen(
-        message: String
+    message: String
 ) {
     Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                    text = "Error",
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.error
+                text = "Error", fontSize = 24.sp, color = MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = message)
