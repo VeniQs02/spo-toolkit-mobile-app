@@ -1,6 +1,7 @@
 package com.example.spotoolkit.ui.UserProfile
 
 import MainViewModel
+import android.widget.Button
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -82,6 +83,12 @@ fun UserDataList(userResults: User) {
             text = "Followers: ${formatFollowerNumber(userResults.followers)}",
             style = MaterialTheme.typography.bodyMedium
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = {}){
+            Text(stringResource(R.string.log_out))
+        }
     }
 }
 

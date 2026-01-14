@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
+import com.example.spotoolkit.R
 import com.example.spotoolkit.ui.BottomDest
 import com.example.spotoolkit.ui.Playlists.PlaylistsScreen
 import com.example.spotoolkit.ui.UserProfile.UserProfileScreen
@@ -32,7 +34,7 @@ fun MainScreen(vm: MainViewModel) {
 
     Scaffold(bottomBar = {
         Box(modifier = Modifier.height(56.dp)) {
-            NavigationBar {
+            NavigationBar(tonalElevation = 0.dp, containerColor = colorResource(R.color.surface)) {
                 val backStack by navController.currentBackStackEntryAsState()
                 val currentRoute = backStack?.destination?.route
 

@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.spotoolkit.R
 import com.example.spotoolkit.util.AuthState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun LoginScreen(vm: MainViewModel) {
