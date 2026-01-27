@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 import com.example.spotoolkit.R
-import com.example.spotoolkit.ui.BottomDest
+import com.example.spotoolkit.data.BottomDest
 import com.example.spotoolkit.ui.Playlists.PlaylistsScreen
 import com.example.spotoolkit.ui.UserProfile.UserProfileScreen
 import com.example.spotoolkit.ui.Search.SearchScreen

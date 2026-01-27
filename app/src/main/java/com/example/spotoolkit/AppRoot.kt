@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.colorResource
 import com.example.spotoolkit.ui.Login.LoginScreen
 import com.example.spotoolkit.ui.main.MainScreen
-import com.example.spotoolkit.util.AuthState
+import com.example.spotoolkit.data.AuthState
 
 @Composable
 fun AppRoot(vm: MainViewModel) {

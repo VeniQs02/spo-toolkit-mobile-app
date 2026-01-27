@@ -1,7 +1,6 @@
 package com.example.spotoolkit.ui.UserProfile
 
 import MainViewModel
-import android.widget.Button
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,14 +8,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.spotoolkit.R
 import com.example.spotoolkit.ui.Search.formatFollowerNumber
-import com.example.spotoolkit.util.AuthState
+import com.example.spotoolkit.data.AuthState
+import com.example.spotoolkit.data.User
 
 @Composable
 fun UserProfileScreen(vm: MainViewModel) {
@@ -31,7 +30,7 @@ fun UserProfileScreen(vm: MainViewModel) {
         }
 
         userResults != null -> {
-            UserDataList(userResults!!)
+            UserDataList(userResults!!, vm)
         }
 
         else -> {
@@ -43,7 +42,7 @@ fun UserProfileScreen(vm: MainViewModel) {
 }
 
 @Composable
-fun UserDataList(userResults: User) {
+fun UserDataList(userResults: User, vm: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -86,7 +85,7 @@ fun UserDataList(userResults: User) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = {}){
+        Button(onClick = { vm.logout() }) {
             Text(stringResource(R.string.log_out))
         }
     }

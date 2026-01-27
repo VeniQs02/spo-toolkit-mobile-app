@@ -6,8 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import com.example.spotoolkit.ui.Search.SearchType
-import com.example.spotoolkit.ui.UserProfile.User
+import com.example.spotoolkit.data.SearchType
+import com.example.spotoolkit.data.TokenBundle
+import com.example.spotoolkit.data.User
 import com.example.spotoolkit.util.PKCEUtil
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,6 @@ class SpotifyRepository(context: Context) {
 
     private val baseUrl: HttpUrl =
         HttpUrl.Builder().scheme("https").host("api.spotify.com").addPathSegment("v1").build()
-
 
     fun buildAuthIntent(): Intent {
         val verifier = PKCEUtil.generateCodeVerifier()
@@ -57,11 +57,32 @@ class SpotifyRepository(context: Context) {
         prefs.edit().putString(KEY_VERIFIER, verifier).apply()
     }
 
-    companion object {
-        private const val KEY_VERIFIER = "pkce_verifier"
+    fun clearToken() {
+        prefs.edit().remove(KEY_ACCESS).remove(KEY_REFRESH).remove(KEY_EXPIRES_AT).apply()
     }
 
-    suspend fun exchangeCodeForToken(code: String): String = withContext(Dispatchers.IO) {
+    fun saveToken(token: TokenBundle) {
+        prefs.edit().putString(KEY_ACCESS, token.accessToken).putString(KEY_REFRESH, token.refreshToken)
+            .putLong(KEY_EXPIRES_AT, token.expiresAt).apply()
+    }
+
+    fun loadToken(): TokenBundle? {
+        val access = prefs.getString(KEY_ACCESS, null) ?: return null
+        val refresh = prefs.getString(KEY_REFRESH, null) ?: return null
+        val expiresAt = prefs.getLong(KEY_EXPIRES_AT, 0L)
+        if (expiresAt == 0L) return null
+
+        return TokenBundle(access, refresh, expiresAt)
+    }
+
+    companion object {
+        private const val KEY_VERIFIER = "pkce_verifier"
+        private const val KEY_ACCESS = "access_token"
+        private const val KEY_REFRESH = "refresh_token"
+        private const val KEY_EXPIRES_AT = "expires_at"
+    }
+
+    suspend fun exchangeCodeForToken(code: String): TokenBundle = withContext(Dispatchers.IO) {
         val verifier = getVerifier()
 
         val body = FormBody.Builder().add("grant_type", "authorization_code").add("code", code)
@@ -79,16 +100,52 @@ class SpotifyRepository(context: Context) {
         }
 
         clearVerifier()
-        JSONObject(responseBody).getString("access_token")
+        val json = JSONObject(responseBody)
+
+        TokenBundle(
+            accessToken = json.getString("access_token"),
+            refreshToken = json.getString("refresh_token"),
+            expiresAt = System.currentTimeMillis() + json.getLong("expires_in") * 1000
+        )
     }
 
-    suspend fun search(
-        token: String, query: String, type: SearchType
-    ): List<SearchResultItem> = withContext(Dispatchers.IO) {
+    suspend fun refreshToken(refreshToken: String): TokenBundle = withContext(Dispatchers.IO) {
+
+        val body = FormBody.Builder().add("grant_type", "refresh_token").add("refresh_token", refreshToken)
+            .add("client_id", CLIENT_ID).build()
+
+        val request = Request.Builder().url("https://accounts.spotify.com/api/token").post(body).build()
+
+        val response = client.newCall(request).execute()
+        val json = JSONObject(response.body!!.string())
+
+        TokenBundle(
+            accessToken = json.getString("access_token"),
+            refreshToken = json.optString("refresh_token", refreshToken),
+            expiresAt = System.currentTimeMillis() + json.getLong("expires_in") * 1000
+        )
+    }
+
+    suspend fun getValidAccessToken(): String {
+        val token = loadToken() ?: error("No session")
+
+        if (System.currentTimeMillis() < token.expiresAt - 60_000) {
+            return token.accessToken
+        }
+
+        val refreshed = refreshToken(token.refreshToken)
+        saveToken(refreshed)
+        return refreshed.accessToken
+    }
+
+
+    suspend fun search(query: String, type: SearchType): List<SearchResultItem> = withContext(Dispatchers.IO) {
+        val accessToken = getValidAccessToken()
+
         val url = baseUrl.newBuilder().addPathSegment("search").addQueryParameter("q", query)
             .addQueryParameter("type", type.string).addQueryParameter("limit", "10").build()
 
-        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $token").build()
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer ${accessToken}").build()
 
         val response = client.newCall(request).execute()
         val body = response.body?.string() ?: return@withContext emptyList()
@@ -119,10 +176,11 @@ class SpotifyRepository(context: Context) {
     }
 
 
-    suspend fun fetchUserData(token: String): User = withContext(Dispatchers.IO) {
+    suspend fun fetchUserData(): User = withContext(Dispatchers.IO) {
+        val accessToken = getValidAccessToken()
         val url = baseUrl.newBuilder().addPathSegment("me").build()
 
-        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $token").build()
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer ${accessToken}").build()
 
         val response = client.newCall(request).execute()
         val body = response.body?.string() ?: error("Empty response")

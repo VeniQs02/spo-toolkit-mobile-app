@@ -1,26 +1,32 @@
 import android.app.Application
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.spotoolkit.repositories.SpotifyRepository
-import com.example.spotoolkit.ui.Search.SearchType
+import com.example.spotoolkit.data.SearchType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import com.example.spotoolkit.ui.UserProfile.User
-import com.example.spotoolkit.util.AuthState
+import com.example.spotoolkit.data.User
+import com.example.spotoolkit.data.AuthState
+import com.example.spotoolkit.data.TokenBundle
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = SpotifyRepository(application)
 
     val authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
-    val token = MutableStateFlow<String?>(null)
+    val token = MutableStateFlow<TokenBundle?>(null)
     val query = MutableStateFlow("")
     val userResults = MutableStateFlow<User?>(null)
     val loading = MutableStateFlow(false)
 
     val searchResults = MutableStateFlow<List<SearchResultItem>>(emptyList())
     val searchType = MutableStateFlow(SearchType.Artist)
+
+    init {
+        restoreSession()
+    }
 
     fun buildSpotifyAuthIntent(): Intent {
         return repo.buildAuthIntent()
@@ -32,8 +38,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val newToken = repo.exchangeCodeForToken(code)
+                repo.saveToken(newToken)
                 token.value = newToken
                 authState.value = AuthState.Authenticated
+
                 repo.clearVerifier()
                 fetchUserData()
             } catch (e: Exception) {
@@ -42,31 +50,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun search() {
-        val t = token.value ?: return
-        val q = query.value.ifEmpty { return }
+    fun restoreSession() {
+        viewModelScope.launch {
+            try {
+                token.value = repo.loadToken()
+                authState.value = AuthState.Authenticated
+                if (userResults.value == null) fetchUserData()
+            } catch (e: Exception) {
+                authState.value = AuthState.Unauthenticated
+            }
+        }
+    }
 
+
+    fun fetchUserData() {
         viewModelScope.launch {
             loading.value = true
             try {
-                searchResults.value = repo.search(t, q, searchType.value)
+                userResults.value = repo.fetchUserData()
             } catch (e: Exception) {
-                searchResults.value = emptyList()
+                userResults.value = null
             }
             loading.value = false
         }
     }
 
 
-    fun fetchUserData() {
-        val t = token.value ?: return
+    fun logout() {
+        repo.clearToken()
+        token.value = null
+        userResults.value = null
+        searchResults.value = emptyList()
+        query.value = ""
+        authState.value = AuthState.Unauthenticated
+        Log.d("PKCE", "Auth state changed: ${authState.value}")
+    }
+
+    fun search() {
+        val q = query.value.ifEmpty { return }
 
         viewModelScope.launch {
             loading.value = true
             try {
-                userResults.value = repo.fetchUserData(t)
+                searchResults.value = repo.search(q, searchType.value)
             } catch (e: Exception) {
-                userResults.value = null
+                searchResults.value = emptyList()
             }
             loading.value = false
         }
