@@ -38,6 +38,12 @@ data class Track(
     @SerializedName("external_urls") val externalUrls: Map<String, String>? = emptyMap()
 )
 
+val Track.primaryArtistName: String
+    get() = artists?.firstOrNull()?.name ?: "Unknown"
+
+val Track.albumArtUrl: String?
+    get() = album?.images?.firstOrNull()?.url
+
 data class Album(
     @SerializedName("id") val id: String? = null,
     @SerializedName("name") val name: String? = null,

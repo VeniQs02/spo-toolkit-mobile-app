@@ -2,11 +2,13 @@
     <string name="app_name">SpoToolkit</string>
     <string name="title_login">Login</string>
     <string name="title_search">Search</string>
-    <string name="title_playlists">Playlists</string>
+    <string name="title_player">Player</string>
     <string name="title_user_profile">User profile</string>
 
     <string name="login_with_spotify">Login with Spotify</string>
     <string name="logging_in">Logging in…</string>
     <string name="already_logged_in">Already logged in</string>
     <string name="log_out">Log out</string>
+
+    <string name="could_find_no_song">Could find no song!</string>
 </resources>

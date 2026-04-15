@@ -10,6 +10,9 @@ import kotlinx.coroutines.launch
 import com.example.spotoolkit.data.User
 import com.example.spotoolkit.data.AuthState
 import com.example.spotoolkit.data.TokenBundle
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +26,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val searchResults = MutableStateFlow<List<SearchResultItem>>(emptyList())
     val searchType = MutableStateFlow(SearchType.Artist)
+
+    val currentTrack = MutableStateFlow<Track?>(null)
+    val recommendations = MutableStateFlow<List<Track>>(emptyList())
+    val isPlaying = MutableStateFlow(false)
 
     init {
         restoreSession()
@@ -44,6 +51,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 repo.clearVerifier()
                 fetchUserData()
+                startPlaybackObserver()
             } catch (e: Exception) {
                 authState.value = AuthState.Error(e.message ?: "Authorization failed")
             }
@@ -52,15 +60,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restoreSession() {
         viewModelScope.launch {
-            try {
-                token.value = repo.loadToken()
+            val savedToken = repo.loadToken()
+            if (savedToken != null) {
+                token.value = savedToken
                 authState.value = AuthState.Authenticated
-                if (userResults.value == null) fetchUserData()
-            } catch (e: Exception) {
+                if (userResults.value == null) {
+                    fetchUserData()
+                    startPlaybackObserver()
+                }
+            } else {
                 authState.value = AuthState.Unauthenticated
             }
         }
     }
+
 
 
     fun fetchUserData() {
@@ -92,12 +105,61 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             loading.value = true
             try {
-                searchResults.value = repo.search(q, searchType.value)
+                searchResults.value = repo.search(q, searchType.value) ?: emptyList()
             } catch (e: Exception) {
                 searchResults.value = emptyList()
             }
             loading.value = false
         }
     }
+
+    fun togglePlay() {
+        // Optimistically update UI
+        isPlaying.value = !isPlaying.value
+
+        viewModelScope.launch {
+            try {
+                if (isPlaying.value) repo.play() else repo.pause()
+            } catch (e: Exception) {
+                // Revert on failure
+                isPlaying.value = !isPlaying.value
+            }
+        }
+    }
+
+    private var lastSeedTrackId: String? = null
+
+    private fun loadRecommendations(track: Track) {
+        val seedId = track.id ?: return
+        if (seedId == lastSeedTrackId) return
+        lastSeedTrackId = seedId
+
+        viewModelScope.launch {
+            val recs = repo.getRecommendations(seedId, track.id)
+            Log.d("RECS", "Got ${recs?.size ?: 0} recommendations")
+            recommendations.value = recs ?: emptyList()
+        }
+    }
+
+
+    private var pollingJob: Job? = null
+
+    fun startPlaybackObserver() {
+        pollingJob?.cancel()
+
+        pollingJob = viewModelScope.launch {
+            while (isActive) {
+                val state = repo.getCurrentlyPlaying()
+                if (state != null && state.track != null) {
+                    currentTrack.value = state.track
+                    isPlaying.value = state.isPlaying
+
+                    loadRecommendations(state.track)
+                }
+                delay(3_000)
+            }
+        }
+    }
 }
+
 

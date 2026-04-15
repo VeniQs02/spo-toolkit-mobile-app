@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 import com.example.spotoolkit.R
 import com.example.spotoolkit.data.BottomDest
-import com.example.spotoolkit.ui.Playlists.PlaylistsScreen
+import com.example.spotoolkit.ui.Playlists.PlayerScreen
 import com.example.spotoolkit.ui.UserProfile.UserProfileScreen
 import com.example.spotoolkit.ui.Search.SearchScreen
 
@@ -29,7 +29,7 @@ fun MainScreen(vm: MainViewModel) {
     LaunchedEffect(authState) { Log.d("PKCE", "Auth state changed: $authState") }
 
     val items = listOf(
-        BottomDest.Search, BottomDest.Playlists, BottomDest.UserProfile
+        BottomDest.Search, BottomDest.Player, BottomDest.UserProfile
     )
 
     Scaffold(bottomBar = {
@@ -55,7 +55,7 @@ fun MainScreen(vm: MainViewModel) {
             modifier = Modifier.padding(padding)
         ) {
             composable(BottomDest.Search.route) { SearchScreen(vm) }
-            composable(BottomDest.Playlists.route) { PlaylistsScreen() }
+            composable(BottomDest.Player.route) { PlayerScreen(vm) }
             composable(BottomDest.UserProfile.route) { UserProfileScreen(vm) }
         }
     }
