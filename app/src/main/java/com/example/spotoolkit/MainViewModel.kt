@@ -75,7 +75,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-
     fun fetchUserData() {
         viewModelScope.launch {
             loading.value = true
@@ -114,14 +113,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun togglePlay() {
-        // Optimistically update UI
         isPlaying.value = !isPlaying.value
 
         viewModelScope.launch {
             try {
                 if (isPlaying.value) repo.play() else repo.pause()
             } catch (e: Exception) {
-                // Revert on failure
                 isPlaying.value = !isPlaying.value
             }
         }

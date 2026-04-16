@@ -48,11 +48,17 @@ fun PlayerScreen(vm: MainViewModel) {
             AsyncImage(
                 model = url,
                 contentDescription = track?.name ?: "Unknown track",
-                modifier = Modifier.size(200.dp).clip(RoundedCornerShape(16.dp)).align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .align(Alignment.CenterHorizontally),
                 contentScale = ContentScale.Crop
             )
         } ?: Box(
-            modifier = Modifier.size(200.dp).background(Color.Gray).align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .size(200.dp)
+                .background(Color.Gray)
+                .align(Alignment.CenterHorizontally)
         )
 
         Spacer(Modifier.height(8.dp))
@@ -63,15 +69,13 @@ fun PlayerScreen(vm: MainViewModel) {
         )
 
         Text(
-            text = track?.primaryArtistName ?: "",
-            style = MaterialTheme.typography.bodyMedium
+            text = track?.primaryArtistName ?: "", style = MaterialTheme.typography.bodyMedium
         )
 
         Spacer(Modifier.height(16.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
             IconButton(onClick = vm::togglePlay) {
                 Icon(
@@ -88,8 +92,7 @@ fun PlayerScreen(vm: MainViewModel) {
         Spacer(Modifier.height(8.dp))
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (recommendations.isNotEmpty()) {
                 items(recommendations) { recTrack -> RecommendationItem(recTrack) }
@@ -107,8 +110,7 @@ fun RecommendationItem(track: Track) {
     Column(
         modifier = Modifier
             .width(120.dp)
-            .clickable {},
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable {}, horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
             model = track.albumArtUrl,

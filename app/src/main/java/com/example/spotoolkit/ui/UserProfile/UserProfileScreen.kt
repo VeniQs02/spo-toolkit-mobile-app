@@ -48,7 +48,7 @@ fun UserDataList(userResults: User, vm: MainViewModel) {
             .fillMaxWidth()
             .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Image
+
         if (!userResults.imageUrl.isNullOrEmpty()) {
             AsyncImage(
                 model = userResults.imageUrl,
@@ -59,7 +59,6 @@ fun UserDataList(userResults: User, vm: MainViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Display name
         Text(
             text = userResults.displayName, style = MaterialTheme.typography.titleLarge
         )
@@ -77,7 +76,6 @@ fun UserDataList(userResults: User, vm: MainViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Followers
         Text(
             text = "Followers: ${formatFollowerNumber(userResults.followers)}",
             style = MaterialTheme.typography.bodyMedium

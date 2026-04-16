@@ -46,7 +46,8 @@ class SpotifyRepository(context: Context) {
             "playlist-read-private",
             "user-read-playback-state",
             "user-modify-playback-state",
-            "user-read-currently-playing"
+            "user-read-currently-playing",
+            "user-personalized"
         ).joinToString(" ")
 
         val uri = Uri.Builder().scheme("https").authority("accounts.spotify.com").appendPath("authorize")
@@ -115,24 +116,17 @@ class SpotifyRepository(context: Context) {
 
         TokenBundle(
             accessToken = json.getString("access_token"),
-            refreshToken = json.optString("refresh_token")
-                ?: throw Exception("Missing refresh_token: $responseBody"),
+            refreshToken = json.optString("refresh_token") ?: throw Exception("Missing refresh_token: $responseBody"),
             expiresAt = System.currentTimeMillis() + json.getLong("expires_in") * 1000
         )
     }
 
     suspend fun refreshToken(refreshToken: String): TokenBundle = withContext(Dispatchers.IO) {
 
-        val body = FormBody.Builder()
-            .add("grant_type", "refresh_token")
-            .add("refresh_token", refreshToken)
-            .add("client_id", CLIENT_ID)
-            .build()
+        val body = FormBody.Builder().add("grant_type", "refresh_token").add("refresh_token", refreshToken)
+            .add("client_id", CLIENT_ID).build()
 
-        val request = Request.Builder()
-            .url("https://accounts.spotify.com/api/token")
-            .post(body)
-            .build()
+        val request = Request.Builder().url("https://accounts.spotify.com/api/token").post(body).build()
 
         val response = client.newCall(request).execute()
         val responseBody = response.body?.string() ?: ""
@@ -244,14 +238,12 @@ class SpotifyRepository(context: Context) {
     suspend fun getCurrentlyPlaying(): CurrentlyPlaying? = withContext(Dispatchers.IO) {
         val token = getValidAccessToken() ?: return@withContext null
 
-        val request = Request.Builder()
-            .url("https://api.spotify.com/v1/me/player/currently-playing")
-            .addHeader("Authorization", "Bearer $token")
-            .build()
+        val request = Request.Builder().url("https://api.spotify.com/v1/me/player/currently-playing")
+            .addHeader("Authorization", "Bearer $token").build()
 
         val response = client.newCall(request).execute()
 
-        if (response.code == 204) return@withContext null // nothing playing
+        if (response.code == 204) return@withContext null // 204 = nothing playing
         if (!response.isSuccessful) return@withContext null
 
         val json = JSONObject(response.body!!.string())
@@ -266,11 +258,8 @@ class SpotifyRepository(context: Context) {
     suspend fun play() = withContext(Dispatchers.IO) {
         val token = getValidAccessToken() ?: return@withContext null
 
-        val request = Request.Builder()
-            .url("https://api.spotify.com/v1/me/player/play")
-            .put(RequestBody.create(null, ByteArray(0)))
-            .addHeader("Authorization", "Bearer $token")
-            .build()
+        val request = Request.Builder().url("https://api.spotify.com/v1/me/player/play")
+            .put(RequestBody.create(null, ByteArray(0))).addHeader("Authorization", "Bearer $token").build()
 
         client.newCall(request).execute()
     }
@@ -278,11 +267,8 @@ class SpotifyRepository(context: Context) {
     suspend fun pause() = withContext(Dispatchers.IO) {
         val token = getValidAccessToken() ?: return@withContext null
 
-        val request = Request.Builder()
-            .url("https://api.spotify.com/v1/me/player/pause")
-            .put(RequestBody.create(null, ByteArray(0)))
-            .addHeader("Authorization", "Bearer $token")
-            .build()
+        val request = Request.Builder().url("https://api.spotify.com/v1/me/player/pause")
+            .put(RequestBody.create(null, ByteArray(0))).addHeader("Authorization", "Bearer $token").build()
 
         client.newCall(request).execute()
     }
@@ -292,10 +278,9 @@ class SpotifyRepository(context: Context) {
 
             val accessToken = getValidAccessToken() ?: return@withContext null
 
-            val builder = baseUrl.newBuilder()
-                .addPathSegment("recommendations")
-                .addQueryParameter("seed_tracks", seedTrackId)
-                .addQueryParameter("limit", "10")
+            val builder =
+                baseUrl.newBuilder().addPathSegment("recommendations").addQueryParameter("seed_tracks", seedTrackId)
+                    .addQueryParameter("limit", "10")
 
             if (!seedArtistId.isNullOrEmpty()) {
                 builder.addQueryParameter("seed_artists", seedArtistId)
@@ -303,10 +288,7 @@ class SpotifyRepository(context: Context) {
 
             val url = builder.build()
 
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $accessToken")
-                .build()
+            val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $accessToken").build()
 
             val response = client.newCall(request).execute()
             val body = response.body?.string() ?: return@withContext emptyList()
