@@ -6,10 +6,10 @@ The project is a training mobile application that allows the user to look up sta
 
 ## Preview
 
-<img width="360" height="640" alt="image (1)" src="https://github.com/user-attachments/assets/7e607164-088b-4ecc-859d-ccdbd85ce6e4" />
-<img width="360" height="640" alt="image" src="https://github.com/user-attachments/assets/c179c573-1ffd-4d36-a3fb-3236bde41a24" />
-<img width="360" height="640" alt="image (2)" src="https://github.com/user-attachments/assets/0ae12c96-8c2e-46f1-a1b6-f429375a79fb" />
-<img width="360" height="640" alt="image (3)" src="https://github.com/user-attachments/assets/b6eac53e-b2bd-47db-8cd7-07b50e2005b4" />
+<img width="360" height="640" alt="spotoolkit-1" src="https://github.com/user-attachments/assets/c464dc86-5a10-4b3c-bfbe-799f146f46d3" />
+<img width="360" height="640" alt="spotoolkit-2" src="https://github.com/user-attachments/assets/bc71a7fe-5c32-45ce-b892-367d89880b2c" />
+<img width="360" height="640" alt="spotoolkit-3" src="https://github.com/user-attachments/assets/c3835ad7-88e0-4ac2-b520-a94bd2dd8b04" />
+<img width="360" height="640" alt="spotoolkit-4" src="https://github.com/user-attachments/assets/3c512a80-194b-4bc0-9ee6-3f044cb23936" />
 
 ## Tech Stack
 
